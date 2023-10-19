@@ -17,8 +17,5 @@ $$L=x^2+\dot{y}^2\ddot{z}^2+\dot{z}\dddot{w}^2$$
 2. Terms where the Nth derivative of two different variables are combined result in the Nth derivatives being displayed in the Hamiltonian. NOT CORRECT
 	- **Solution:** Solve A's as a system of equations, not as a singular equation because they may be coupled
 
-# TODO Testing:
-
-- Test higher degree coupled highest order derivatives, i.e. $$L=x^2+\dot{y}^4\ddot{z}^4+\dot{z}\dddot{w}^2$$
-	- Goal is to get a non-analytical
+3. In Hamilton Equations calculation, Maple doesn't know that P's are functions of time. If you explicitly make them functions of time, you can't take derivatives w.r.t. them. 
 
