@@ -217,7 +217,7 @@ end proc:</Text-field>
 </Output>
 </Group>
 <Group hide-input="false" labelreference="L6" drawlabel="true" applyint="true" applyrational="true" applyexponent="false">
-<Input><Text-field prompt="J1 &gt; " style="Maple Input" layout="Normal">with(VectorCalculus):Hamiltonian(Lag, J2, [2,1]);</Text-field>
+<Input><Text-field prompt="J1 &gt; " style="Maple Input" layout="Normal">Hamiltonian(Lag, J2, [2,1]);</Text-field>
 </Input>
 <Output><Text-field style="HyperlinkError" layout="HyperlinkError"><Hyperlink linktarget="http://www.maplesoft.com/support/help/errors/view.aspx?path=Error,%20(in%20Hamiltonian)%20The%20Hessian%20of%20L%20must%20be%20non-degenerate%20(det(Hessian(L))%20cannot%20be%200).%20The%20determinant%20of%20Hessian%20for%20the%20provided%20L%20is%200." hyperlink="true"><Font style="HyperlinkError">Error, (in Hamiltonian) The Hessian of L must be non-degenerate (det(Hessian(L)) cannot be 0). The determinant of Hessian for the provided L is 0.</Font></Hyperlink></Text-field>
 </Output>
