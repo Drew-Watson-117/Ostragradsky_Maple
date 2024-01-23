@@ -1,0 +1,93 @@
+print("Read Successful");
+with(DifferentialGeometry):with(JetCalculus):with(Tools):
+Hamiltonian := proc(L, frame, orders)
+local P, X, N, As, t, Hamiltonian, newL, DepVars, k, HighestOrderDiffs, Xk, i, hessianDeterminant, PnEqns, PnEqn, slns, A;
+
+N := orders; # List of orders {N1, N2, N3, ... , Nk ,... , NM}
+
+t := DifferentialGeometry:-Tools[DGinfo](frame, "FrameIndependentVariables")[1];
+
+DepVars := DifferentialGeometry:-Tools[DGinfo](frame, "FrameDependentVariables");
+
+
+# Make sure N contains an order for every single dependent variable
+if numelems(N) <> numelems(DepVars) then 
+  error "The length of 'orders' (%1) must match the number of dependent variables in the jet space (%2)", numelems(N), numelems(DepVars)
+end if;
+# Make sure the minimum highest order of each dependent variable is 1
+for k from 1 to numelems(orders) do
+  if orders[k] < 1 then
+    error "All dependent variables in the Lagrangian must have a highest order of at least 1";
+  end if;
+end do;
+
+# Load Independent Variables and Derivatives into a Matrix
+X := []; # Matrix of dependent variables and their derivatives
+HighestOrderDiffs := []; # Matrix of highest order derivatives for each dependent variable
+for k from 1 to numelems(DepVars) do
+  Xk := [DepVars[k][]];
+  if N[k] > 0 then
+    for i from 1 to N[k] do
+      Xk := [op(Xk),TotalDiff(Xk[i],t)]; # Add ith time derivative of xk to list
+    end do;
+  end if;
+  
+  if N[k] >= 0 then
+    HighestOrderDiffs := [op(HighestOrderDiffs),Xk[N[k]+1]];
+    X := [op(X),Xk]; # Add Xk to the independent variables matrix X
+  else 
+    HighestOrderDiffs := [op(HighestOrderDiffs),[]];
+    X := [op(X),[]]; # If N[k] < 0 (no DepVars[k] dependence in L) then append empty list
+  end if;
+end do;
+
+# Make sure Nth derviative is nondegenerate using Hessian
+hessianDeterminant := VectorCalculus:-Hessian(L,HighestOrderDiffs,determinant=true)[2];
+if hessianDeterminant = 0 then
+  error "The Hessian of L must be non-degenerate (det(Hessian(L)) cannot be 0). The determinant of Hessian for the provided L is 0."
+end if;
+
+#-----
+# X[k][i] labels the i-1th derivative of independent variable k
+# P[X[k][i]] labels the conjugate momentum for X[k][i]
+#-----
+
+
+# Find A for each Independent Variable
+As := []; # List of A values for each independent variable
+PnEqns := []; # System of Equations for finding A's
+for k from 1 to numelems(DepVars) do
+  if N[k] > 0 then
+    PnEqn := P[X[k][N[k]]] = diff(L,X[k][N[k]+1]);
+  else
+    PnEqn := P[X[k][N[k]]] = 0;
+  end if;
+
+  PnEqns := [op(PnEqns), PnEqn];
+
+end do;
+
+slns := solve(PnEqns,HighestOrderDiffs); # Solve system of Eqns to find A's
+for k from 1 to numelems(DepVars) do
+  A := allvalues(rhs(slns[1][k]));
+  if numelems([A]) > 1 then A := A[1] end if; #If there are multiple solutions for A, take the first one listed (which is positive and real)
+  if N[k] = 0 then A := X[k][1] end if; # If the highest order derivative in L is 0, don't make a substitution, x should just be x in the new L
+  As := [op(As),A] # Get A's into a more convenient form
+end do;
+
+# Solve Lagrangian in Terms of A's
+newL := L;
+for k from 1 to numelems(DepVars) do
+  A := As[k];
+  newL := eval(newL,[X[k][N[k]+1]=A]);
+end do;
+
+# Define all Conjugate Momenta for 0th order derivatives to be 0 (conjugate momentum for x is 0)
+for k from 1 to numelems(DepVars) do
+  P[DepVars[k],0] := 0
+end do;
+
+# Construct Hamiltonian
+Hamiltonian := add( add( P[X[k][i]]*X[k][i+1] ,i=1..N[k]-1),k=1..numelems(DepVars)) + add(P[X[k][N[k]]]*As[k],k=1..numelems(DepVars)) - newL;
+
+end proc:

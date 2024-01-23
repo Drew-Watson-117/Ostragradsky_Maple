@@ -1,0 +1,28 @@
+HamiltonEquations := proc (Hamiltonian, canonicalPairs, canonicalNames := canonicalPairs)
+local HamiltonEqns, i, pair, x, p, HamiltonEqn1, HamiltonEqn2, j, pairPrime, names;
+HamiltonEqns := [];
+
+if numelems(canonicalPairs) <> numelems(canonicalNames) then
+  error "canonicalPairs (length %1) must have the same length as canonicalNames (length %2)", numelems(canonicalPairs), numelems(canonicalNames)
+end if; 
+
+for i to numelems(canonicalPairs) do 
+  pair := canonicalPairs[i];
+  if numelems(pair) <> 2 then 
+    error "canonicalPairs must be a list of pairs of values." 
+  end if;
+  x := pair[1];
+  p := pair[2];
+  HamiltonEqn1 := diff(x(t), t) = diff(Hamiltonian, p);
+  HamiltonEqn2 := diff(p(t), t) = -(diff(Hamiltonian, x));
+  for j to numelems(canonicalPairs) do 
+    pairPrime := canonicalPairs[j];
+    names := canonicalNames[j];
+    if numelems(pairPrime) <> 2 then 
+      error "canonicalNames must be a list of pairs of values." 
+    end if; 
+    HamiltonEqn1 := eval(lhs(HamiltonEqn1), [pairPrime[1] = names[1], pairPrime[2] = names[2]]) = eval(rhs(HamiltonEqn1), [pairPrime[1] = names[1](t), pairPrime[2] = names[2](t)]); 
+    HamiltonEqn2 := eval(lhs(HamiltonEqn2), [pairPrime[1] = names[1], pairPrime[2] = names[2]]) = eval(rhs(HamiltonEqn2), [pairPrime[1] = names[1](t), pairPrime[2] = names[2](t)]) 
+  end do; HamiltonEqns := [op(HamiltonEqns), HamiltonEqn1, HamiltonEqn2] 
+end do;
+end proc:
